@@ -43,7 +43,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
     
     glview->setDesignResolutionSize(1334,750,ResolutionPolicy::SHOW_ALL);
     // turn on display FPS
-    director->setDisplayStats(true);
+    //director->setDisplayStats(true);
     
     // appC cloud 開始
     // pDirector->setDisplayStats(true)の直後で一度だけ呼び出してください

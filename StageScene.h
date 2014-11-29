@@ -52,6 +52,10 @@ public:
     };
     bool freeMode;
     int jugScore;
+    void InitLay();
+    void InitEvent();
+    void InitSound();
+    void BallStart();
     void HandEffect(SPRITE_TAG hand);
     void StageEffect(float dt);
     SWIPE_FLAG s_flag=NONE_SWIPE;

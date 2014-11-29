@@ -55,134 +55,21 @@ bool Stage::init(){
     //画面の座標関係の詳しい説明はここ http://www.cocos2d-x.org/wiki/Coordinate_System
     Size visibleSize = Director::getInstance()->getVisibleSize(); //画面のサイズを取得
     Point origin = Director::getInstance()->getVisibleOrigin();  //マルチレゾリューション対応がどうとか
-    
-
-    Sprite* r_hand= Sprite::create();
-    
-    Sprite* l_hand= Sprite::create();
-    r_hand->setTextureRect(Rect(0, 0, 180, 180));
-    r_hand->setColor(Color3B::RED);
-    r_hand->setPositionZ(-1);
-
-    l_hand->setTextureRect(Rect(0, 0, 180, 180));
-    l_hand->setColor(Color3B::BLUE);
-    l_hand->setPositionZ(-1);
-
-//    for(int i;i<4;i++){
-//        th_ball[i]=Sprite::create();
-//        th_ball[i]->create();
-//        th_ball[i]->setTextureRect(Rect(0, 0,8, 8));
-//        th_ball[i]->setColor(Color3B::BLACK);
-//        th_ball[i]->setPosition(0, 0);
-//        th_ball[i]->setPositionZ(1);
-////        th_ball[i]->setOpacity(128);
-//        this->addChild(th_ball[i]);
-//    }
-    
-    float x_r = visibleSize.width / 2;
-    float y_r = visibleSize.height / 2;
-    
-    float dx=350;
-    float dy=200;
-    r_hand->setPosition(Point(x_r+dx, y_r-dy));
-    r_hand->setTag(1);
-    this->addChild(r_hand);
-    
-    
-    l_hand->setPosition(Point(x_r-dx, y_r-dy));
-    l_hand->setTag(2);
-    this->addChild(l_hand);
-    
-    auto draw = DrawNode::create();
-    draw->drawDot(r_hand->getPosition(), 10.0f, Color4F(1.0f, .6f, .5f, 1.0f));
-    draw->drawDot(l_hand->getPosition(), 10.0f, Color4F(1.0f, .6f, .5f, 1.0f));
-    this->addChild(draw,9);
-    //戻るボタンを設置
-    auto backButton = MenuItemImage::create(
-                                            "back.png",  //表示
-                                            "back.png",  //タップ時の画像
-                                            CC_CALLBACK_1(Stage::pushBack, this));
-    
-    backButton->setPosition(Point(origin.x + visibleSize.width - backButton->getContentSize().width/2 ,
-                                  origin.y + backButton->getContentSize().height/2));
-    
-    //create menu, it's an autorelease object
-    auto menu = Menu::create(backButton, NULL);
-    menu->setPosition(Point::ZERO);
-    this->addChild(menu, 1);
-    
-    
-    
+    //layout構築
+    InitLay();
+    //seリロード
+    InitSound();
+    //Eventセット
+    InitEvent();
     //タッチイベントの監視を開始
-    auto listener = EventListenerTouchOneByOne::create();
-    listener->setSwallowTouches(true);
-    // onTouchBeganイベントコールバック関数実装のラムダ式の例
 
-    listener->onTouchBegan=CC_CALLBACK_2(Stage::onTouchBegan ,this);
-    listener->onTouchCancelled= CC_CALLBACK_2(Stage::onTouchCancelled,this);
-    listener->onTouchMoved= CC_CALLBACK_2(Stage::onTouchMoved,this);
-    listener->onTouchEnded = CC_CALLBACK_2(Stage::onTouchEnded, this);
-    this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener, this);
     
-    auto listener2 = EventListenerKeyboard::create();
-    listener2->onKeyReleased = [](EventKeyboard::KeyCode keyCode, Event* unused_event) {
-        if (keyCode == EventKeyboard::KeyCode::KEY_ESCAPE) {
-            CCLOG("Back!");
-            // 遷移先の画面のインスタンス
-            Scene *pScene = HelloWorld::createScene();
-            
-            // 0.5秒かけてフェードアウトしながら次の画面に遷移します
-            //    引数１:フィードの時間
-            //    引数２：移動先のシーン
-            //    引数３：フィードの色（オプション）
-            TransitionFade* transition = TransitionFade::create(0.5f, pScene);
-            
-            //遷移実行  遷移時のアニメーション　http://study-cocos2d-x.info/scenelayer/55/
-            Director::getInstance()->replaceScene(transition);
-        }
-    };
-    this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener2, this);
-    Sprite* tp = Sprite::create();
-    tp->setTextureRect(Rect(0, 0,10, 10));
-    tp->setPosition(Point(p.x,p.y));
-    
-    this->scheduleUpdate();
-    
-    this->addChild(tp);
-    count=0;
     Stage::ballUpdate(0);
     this->schedule( schedule_selector(Stage::ballUpdate), 9.0 );
     this->schedule( schedule_selector(Stage::StageEffect), 4.0 );
     jugScore=0;
-    CocosDenshion::SimpleAudioEngine::getInstance()->setEffectsVolume(0.5);
-    CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("se_maoudamashii_system46.mp3");
-    CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("se_maoudamashii_system47.mp3");
-    CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("se_maoudamashii_system19.mp3");
-    
-    
-    auto scoreLabel = Label::createWithSystemFont(cocos2d::StringUtils::toString(jugScore), "HiraKakuProN-W6", 48);
-    scoreLabel->setPosition(Point(visibleSize.width/2, visibleSize.height/2));
-    scoreLabel->setTag(20);
-    this->addChild(scoreLabel);
 
-    UserDefault *userDef = UserDefault::getInstance();
-    
-    
-    freeMode = userDef->getBoolForKey("freemode");
-    hitDelay=getSec();
-    
-    auto text = Label::createWithSystemFont("GAME START", "HiraKakuProN-W6", 48);
-    text->setPosition(Point(visibleSize.width/2,visibleSize.height+100));
-    this->addChild(text);
-    auto textAnimation=Sequence::create(FadeIn::create(1.0)
-                                        ,DelayTime::create(1.0)
-                                        ,FadeTo::create(0.3f, 0)
-                                        ,RemoveSelf::create(true)
-                                        ,NULL);
-    
-    text->runAction(textAnimation);
-    
-    CCLOG("system");
+  
 
     return true;
 
@@ -474,10 +361,172 @@ void Stage::onTouchMoved(Touch *pTouch, Event *pEvent)
     CCLOG("TouchMoved");
 }
 
+void Stage::BallStart(){
+    Sprite* r_hand=(Sprite*)this->getChildByTag(RIGHT_HAND_TAG);
+    Sprite* l_hand=(Sprite*)this->getChildByTag(LEFT_HAND_TAG);
+    Sprite* ball=Sprite::create();
 
+    Point ballPos;
+    float ball_size=30;
+    ball->setTextureRect(Rect(0, 0, ball_size, ball_size));
+    
+    count=arc4random()%2;
+    int randomNum = count%2+1;
+    int jumpHeight=100;
+    if(randomNum==(int)RIGHT_HAND_TAG){
+        ball->setTag(C_BALL_TAG);
+        ball->setColor(Color3B::YELLOW);
+        
+        ballPos=r_hand->getPosition();
+    }else{
+        
+        ball->setTag(AC_BALL_TAG);
+        ball->setColor(Color3B::GREEN);
+        ballPos=l_hand->getPosition();
+        
+    }
+    ball->setPosition(ballPos);
+    this->addChild(ball);
+    
+    ActionInterval* rotateAction = CCRotateBy::create(1, 360);
+    
+    //リピート
+    RepeatForever* repeatForever = CCRepeatForever::create(rotateAction);
+    ball->runAction(repeatForever);
+    
+    ball->setPositionZ(0);
+    
+    count++;
+    _balls.pushBack(ball);
+
+}
+void Stage::InitEvent(){
+    auto listener = EventListenerTouchOneByOne::create();
+    listener->setSwallowTouches(true);
+    // onTouchBeganイベントコールバック関数実装のラムダ式の例
+    
+    listener->onTouchBegan=CC_CALLBACK_2(Stage::onTouchBegan ,this);
+    listener->onTouchCancelled= CC_CALLBACK_2(Stage::onTouchCancelled,this);
+    listener->onTouchMoved= CC_CALLBACK_2(Stage::onTouchMoved,this);
+    listener->onTouchEnded = CC_CALLBACK_2(Stage::onTouchEnded, this);
+    this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener, this);
+    
+    auto listener2 = EventListenerKeyboard::create();
+    listener2->onKeyReleased = [](EventKeyboard::KeyCode keyCode, Event* unused_event) {
+        if (keyCode == EventKeyboard::KeyCode::KEY_ESCAPE) {
+            CCLOG("Back!");
+            // 遷移先の画面のインスタンス
+            Scene *pScene = HelloWorld::createScene();
+            
+            // 0.5秒かけてフェードアウトしながら次の画面に遷移します
+            //    引数１:フィードの時間
+            //    引数２：移動先のシーン
+            //    引数３：フィードの色（オプション）
+            TransitionFade* transition = TransitionFade::create(0.5f, pScene);
+            
+            //遷移実行  遷移時のアニメーション　http://study-cocos2d-x.info/scenelayer/55/
+            Director::getInstance()->replaceScene(transition);
+        }
+    };
+    this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener2, this);
+    
+    this->scheduleUpdate();
+}
+void Stage::InitSound(){
+    CocosDenshion::SimpleAudioEngine::getInstance()->setEffectsVolume(0.5);
+    CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("se_maoudamashii_system46.mp3");
+    CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("se_maoudamashii_system47.mp3");
+    CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("se_maoudamashii_system19.mp3");
+    
+}
+void Stage::InitLay(){
+    Size visibleSize = Director::getInstance()->getVisibleSize(); //画面のサイズを取得
+    
+    Point origin = Director::getInstance()->getVisibleOrigin();  //マルチレ対応がどうとか
+    //
+    
+    Sprite* r_hand= Sprite::create();
+    
+    Sprite* l_hand= Sprite::create();
+    r_hand->setTextureRect(Rect(0, 0, 180, 180));
+    r_hand->setColor(Color3B::RED);
+    r_hand->setPositionZ(-1);
+    
+    l_hand->setTextureRect(Rect(0, 0, 180, 180));
+    l_hand->setColor(Color3B::BLUE);
+    l_hand->setPositionZ(-1);
+    
+    //    for(int i;i<4;i++){
+    //        th_ball[i]=Sprite::create();
+    //        th_ball[i]->create();
+    //        th_ball[i]->setTextureRect(Rect(0, 0,8, 8));
+    //        th_ball[i]->setColor(Color3B::BLACK);
+    //        th_ball[i]->setPosition(0, 0);
+    //        th_ball[i]->setPositionZ(1);
+    ////        th_ball[i]->setOpacity(128);
+    //        this->addChild(th_ball[i]);
+    //    }
+    
+    float x_r = visibleSize.width / 2;
+    float y_r = visibleSize.height / 2;
+    
+    float dx=350;
+    float dy=200;
+    r_hand->setPosition(Point(x_r+dx, y_r-dy));
+    r_hand->setTag(1);
+    this->addChild(r_hand);
+    
+    
+    l_hand->setPosition(Point(x_r-dx, y_r-dy));
+    l_hand->setTag(2);
+    this->addChild(l_hand);
+    
+    auto draw = DrawNode::create();
+    draw->drawDot(r_hand->getPosition(), 10.0f, Color4F(1.0f, .6f, .5f, 1.0f));
+    draw->drawDot(l_hand->getPosition(), 10.0f, Color4F(1.0f, .6f, .5f, 1.0f));
+    this->addChild(draw,9);
+    //戻るボタンを設置
+    auto backButton = MenuItemImage::create(
+                                            "back.png",  //表示
+                                            "back.png",  //タップ時の画像
+                                            CC_CALLBACK_1(Stage::pushBack, this));
+    
+    backButton->setPosition(Point(origin.x + visibleSize.width - backButton->getContentSize().width/2 ,
+                                  origin.y + backButton->getContentSize().height/2));
+    
+    //create menu, it's an autorelease object
+    auto menu = Menu::create(backButton, NULL);
+    menu->setPosition(Point::ZERO);
+    this->addChild(menu, 1);
+    
+    auto scoreLabel = Label::createWithSystemFont(cocos2d::StringUtils::toString(jugScore), "HiraKakuProN-W6", 48);
+    scoreLabel->setPosition(Point(visibleSize.width/2, visibleSize.height/2));
+    scoreLabel->setTag(20);
+    this->addChild(scoreLabel);
+    
+    UserDefault *userDef = UserDefault::getInstance();
+    
+    
+    freeMode = userDef->getBoolForKey("freemode");
+    hitDelay=getSec();
+    
+    auto text = Label::createWithSystemFont("GAME START", "HiraKakuProN-W6", 48);
+    text->setPosition(Point(visibleSize.width/2,visibleSize.height+100));
+    this->addChild(text);
+    auto textAnimation=Sequence::create(FadeIn::create(1.0)
+                                        ,DelayTime::create(1.0)
+                                        ,FadeTo::create(0.3f, 0)
+                                        ,RemoveSelf::create(true)
+                                        ,NULL);
+    
+    text->runAction(textAnimation);
+    
+    
+    BallStart();
+
+}
 void Stage::ballUpdate(float dt){
     Size visibleSize = Director::getInstance()->getVisibleSize(); //画面のサイズを取得
-    Point origin = Director::getInstance()->getVisibleOrigin();  //マルチレゾリューション対応がどうとか
     
     Sprite* r_hand=(Sprite*)this->getChildByTag(RIGHT_HAND_TAG);
     Sprite* l_hand=(Sprite*)this->getChildByTag(LEFT_HAND_TAG);
