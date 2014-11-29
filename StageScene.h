@@ -50,6 +50,7 @@ public:
         DOWN_SWIPE,
         NONE_SWIPE
     };
+    bool startFlag;
     bool freeMode;
     int jugScore;
     void InitLay();

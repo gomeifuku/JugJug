@@ -64,9 +64,7 @@ bool Stage::init(){
     //タッチイベントの監視を開始
 
     
-    Stage::ballUpdate(0);
-    this->schedule( schedule_selector(Stage::ballUpdate), 9.0 );
-    this->schedule( schedule_selector(Stage::StageEffect), 4.0 );
+    
     jugScore=0;
 
   
@@ -398,6 +396,8 @@ void Stage::BallStart(){
     
     count++;
     _balls.pushBack(ball);
+    
+    startFlag=false;
 
 }
 void Stage::InitEvent(){
@@ -710,6 +710,15 @@ void Stage::update(float delta){
 //    draw->setTag(5);
     auto scoreLabel=(Label*)getChildByTag(20);
     scoreLabel->setString(cocos2d::StringUtils::toString(jugScore));
+    
+    if(!startFlag&&jugScore==1){
+        this->runAction(Sequence::create(DelayTime::create(2),CallFunc::create([this](){
+            Stage::ballUpdate(0);
+        }), NULL));
+        this->schedule( schedule_selector(Stage::ballUpdate), 9.0 );
+        this->schedule( schedule_selector(Stage::StageEffect), 4.0 );
+        startFlag=true;
+    }
 
 }
 void Stage::HandEffect(Stage::SPRITE_TAG hand){
