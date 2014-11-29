@@ -182,6 +182,7 @@ bool Stage::init(){
     
     text->runAction(textAnimation);
     
+    CCLOG("system");
 
     return true;
 
