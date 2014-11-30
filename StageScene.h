@@ -41,7 +41,9 @@ public:
         LEFT_HAND_TAG,
         C_BALL_TAG,
         AC_BALL_TAG,
-        WAVE_TAG
+        WAVE_TAG,
+        RIGHT_DIRECTION_TAG,
+        LEFT_DIRECTION_TAG
     };
     enum SWIPE_FLAG{
         RIGHT_SWIPE,
@@ -57,6 +59,7 @@ public:
     void InitEvent();
     void InitSound();
     void BallStart();
+    bool swipeDirectionFlag;
     void HandEffect(SPRITE_TAG hand);
     void StageEffect(float dt);
     SWIPE_FLAG s_flag=NONE_SWIPE;

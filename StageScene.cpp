@@ -64,7 +64,7 @@ bool Stage::init(){
     //タッチイベントの監視を開始
 
     
-    
+    swipeDirectionFlag=false;
     jugScore=0;
 
   
@@ -174,7 +174,7 @@ void Stage::onTouchEnded(Touch *pTouch, Event *pEvent)
     float throwDistance=20;
     Sequence* LLThrow= Sequence::create(
                                     EaseOut::create(MoveBy::create(animationTime, Point(throwDistance,0)), 2),
-                                    EaseIn::create(MoveBy::create(animationTime, Point(-throwDistance,0)), 2),NULL);
+                                    EaseIn::create(MoveBy::create(animationTime, Point(-throwDistance,0)), 2.5),NULL);
     Sequence* RRThrow= Sequence::create(
                                         EaseOut::create(MoveBy::create(animationTime, Point(-throwDistance,0)), 2),
                                         EaseIn::create(MoveBy::create(animationTime, Point(throwDistance,0)), 2),NULL);
@@ -327,35 +327,37 @@ void Stage::onTouchEnded(Touch *pTouch, Event *pEvent)
 
 void Stage::onTouchMoved(Touch *pTouch, Event *pEvent)
 {
-//    Director* pDirector = Director::getInstance();
-//    Point touchPoint = pDirector -> convertToGL(pTouch -> getLocationInView());
-//    const int MIN_DIST=30;
-//    
-//    Vec2 current=pTouch->getLocation();
-//    float rad=atan2(-touchPoint.y+Last_pt.y,-touchPoint.x+Last_pt.x);
-//    CCLOG("%f",rad);
-//    float dist=Last_pt.distance(pTouch->getLocation());
-//    CCLOG("distance=%f",dist);
-//    float deg=MATH_RAD_TO_DEG(rad);
-//    if(dist>MIN_DIST){
-//        CCLOG("Rad2Deg=%f",MATH_RAD_TO_DEG(rad));
-//        if((180>=deg&&deg>135)||(-180<deg&&deg<=-135)){
-//            s_flag=LEFT_SWIPE;
-//            CCLOG("LEFTSWIPE");
-//        }else if(-135<deg&&deg<=-45){
-//            s_flag=UP_SWIPE;
-//            CCLOG("UPSWIPE");
-//        }else if((-45<deg&&deg<=0)||(0<deg&&deg<=45)){
-//            s_flag=RIGHT_SWIPE;
-//            CCLOG("RIGHTSWIPE");
-//        }else if(45<deg&&deg<=135){
-//            s_flag=DOWN_SWIPE;
-//            CCLOG("DOWNSWIPE");
-//        }
-//    }else{
-//        CCLOG("NONESWIPE");
-//        s_flag=NONE_SWIPE;
-//    }
+    Director* pDirector = Director::getInstance();
+    Point touchPoint = pDirector -> convertToGL(pTouch -> getLocationInView());
+    const int MIN_DIST=30;
+    
+    Vec2 current=pTouch->getLocation();
+    float rad=atan2(-touchPoint.y+Last_pt.y,-touchPoint.x+Last_pt.x);
+    CCLOG("%f",rad);
+    float dist=Last_pt.distance(pTouch->getLocation());
+    CCLOG("distance=%f",dist);
+    float deg=MATH_RAD_TO_DEG(rad);
+    swipeDirectionFlag=true;
+    if(dist>MIN_DIST){
+        CCLOG("Rad2Deg=%f",MATH_RAD_TO_DEG(rad));
+        if((180>=deg&&deg>135)||(-180<deg&&deg<=-135)){
+            s_flag=LEFT_SWIPE;
+            CCLOG("LEFTSWIPE");
+        }else if(-135<deg&&deg<=-45){
+            s_flag=UP_SWIPE;
+            CCLOG("UPSWIPE");
+        }else if((-45<deg&&deg<=0)||(0<deg&&deg<=45)){
+            s_flag=RIGHT_SWIPE;
+            CCLOG("RIGHTSWIPE");
+        }else if(45<deg&&deg<=135){
+            s_flag=DOWN_SWIPE;
+            CCLOG("DOWNSWIPE");
+        }
+    }else{
+        CCLOG("NONESWIPE");
+        s_flag=NONE_SWIPE;
+        swipeDirectionFlag=false;
+    }
     CCLOG("TouchMoved");
 }
 
@@ -520,6 +522,24 @@ void Stage::InitLay(){
                                         ,NULL);
     
     text->runAction(textAnimation);
+    
+    auto rightDir =Sprite::create("direction.png");
+    auto leftDir  =Sprite::create("direction.png");
+    
+    rightDir->setPosition(r_hand->getPosition());
+    leftDir->setPosition(l_hand->getPosition());
+    rightDir->setTag(RIGHT_DIRECTION_TAG);
+    leftDir->setTag(LEFT_DIRECTION_TAG);
+    
+    rightDir->setRotation(-90);
+    leftDir->setRotation(90);
+    rightDir->setName("left");
+    leftDir->setName("right");
+    addChild(rightDir);
+    addChild(leftDir);
+    
+    rightDir->runAction(FadeOut::create(0));
+    leftDir->runAction(FadeOut::create(0));
     
     
     BallStart();
