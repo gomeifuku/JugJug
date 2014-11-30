@@ -41,9 +41,10 @@ public:
         LEFT_HAND_TAG,
         C_BALL_TAG,
         AC_BALL_TAG,
-        WAVE_TAG,
         RIGHT_DIRECTION_TAG,
-        LEFT_DIRECTION_TAG
+        LEFT_DIRECTION_TAG,
+        WAVE_TAG,
+        ANOTHER_WAVE_TAG
     };
     enum SWIPE_FLAG{
         RIGHT_SWIPE,
@@ -52,6 +53,12 @@ public:
         DOWN_SWIPE,
         NONE_SWIPE
     };
+    enum TOUCH_SIDE{
+        RIGHT,
+        LEFT,
+        NONE
+    };
+    TOUCH_SIDE touchSide;
     bool startFlag;
     bool freeMode;
     int jugScore;

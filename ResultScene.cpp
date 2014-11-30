@@ -45,17 +45,6 @@ bool Result::init()
     // create and initialize a label
     
     
-    // add "Result" splash screen"
-    auto sprite = Sprite::create("HelloWorld.png");
-    
-    // position the sprite on the center of the screen
-    int d=10;
-    
-    sprite->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y));
-    
-    
-    // add the sprite as a child to this layer
-    this->addChild(sprite, 0,0);
     
     
     
@@ -67,17 +56,16 @@ bool Result::init()
     listener->onTouchMoved= CC_CALLBACK_2(Result::onTouchMoved,this);
     listener->onTouchEnded = CC_CALLBACK_2(Result::onTouchEnded, this);
     this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener, this);
-    
+    int dby=100;
     
     //スタートボタンを設置
-    //Todo::RETRYボタンを作成
     auto startButton = MenuItemImage::create(
-                                             "START.png",  // 通常状態の画像
-                                             "START.png",  // 押下状態の画像
+                                             "BACKbutton.png",  // 通常状態の画像
+                                             "BACKbutton.png",  // 押下状態の画像
                                              CC_CALLBACK_1(Result::pushStart, this)); // 押下時のアクション
     
-    startButton->setPosition(Point(visibleSize.width/2,
-                                   origin.y + startButton->getContentSize().height/2+150));
+    startButton->setPosition(Point(visibleSize.width/4,
+                                 visibleSize.height/2-dby));
     
     //create menu, it's an autorelease object
     auto s_menu = Menu::create(startButton, NULL);
@@ -86,12 +74,11 @@ bool Result::init()
     
     //リトライボタンを設置
     auto retryButton = MenuItemImage::create(
-                                             "Retry.png",  // 通常状態の画像
-                                             "Retry.png",  // 押下状態の画像
+                                             "RETRYbutton.png",  // 通常状態の画像
+                                             "RETRYbutton.png",  // 押下状態の画像
                                              CC_CALLBACK_1(Result::pushRetry, this)); // 押下時のアクション
     
-    retryButton->setPosition(Point(visibleSize.width/2 ,
-                                   origin.y + startButton->getContentSize().height/2+50));
+    retryButton->setPosition(Point(visibleSize.width*3/4 ,visibleSize.height/2-dby));
     //create menu, it's an autorelease object
     auto r_menu = Menu::create(retryButton, NULL);
     r_menu->setPosition(Point::ZERO);
@@ -163,17 +150,7 @@ bool Result::onTouchBegan(Touch *pTouch, Event *pEvent)
 {
     Point location =pTouch->getLocation();
     
-    
-    float animationTime=2.0,jumpHeight=1000,jumpNum=1;
-    float scale = 1.0;
-    
-    Spawn* spawn = Spawn::create(
-                                 JumpTo::create( animationTime,location,jumpHeight,jumpNum),
-                                 ScaleTo::create(animationTime,scale),
-                                 NULL);
-    
-    Sprite* cat= (Sprite*)this->getChildByTag(0);
-    cat->runAction(spawn);
+     
     CCLOG("TouchBegan");
     return true;
 }

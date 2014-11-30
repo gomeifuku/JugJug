@@ -66,7 +66,7 @@ bool Stage::init(){
     
     swipeDirectionFlag=false;
     jugScore=0;
-
+    touchSide=NONE;
   
 
     return true;
@@ -94,9 +94,29 @@ void Stage::pushBack(Object *pSender)
 
 bool Stage::onTouchBegan(Touch *pTouch, Event *pEvent)
 {
+    
+    Size visibleSize = Director::getInstance()->getVisibleSize(); //画面
     Director* pDirector = Director::getInstance();
+    Point touchPoint = pDirector -> convertToGL(pTouch -> getLocationInView());
+    
     Last_pt = pDirector -> convertToGL(pTouch -> getLocationInView());
-  
+    
+    Sprite* r_range = Sprite::create();
+    Sprite* l_range = Sprite::create();
+    r_range->setTextureRect(Rect(0,0 ,visibleSize.width/2, visibleSize.height));
+    r_range->setPosition(Point((visibleSize.width*3)/4,visibleSize.height/2));
+    l_range->setTextureRect(Rect(0, 0, visibleSize.width/2, visibleSize.height));
+    l_range->setPosition(visibleSize.width/4,visibleSize.height/2);
+
+    
+    Rect R_Range_Rect = r_range ->boundingBox();
+    Rect L_Range_Rect = l_range ->boundingBox();
+    
+    if(R_Range_Rect.containsPoint(touchPoint)){
+        touchSide=RIGHT;
+    }else if(L_Range_Rect.containsPoint(touchPoint)){
+        touchSide=LEFT;
+    }
     CCLOG("TouchBegan");
     return true;
 }
@@ -152,6 +172,11 @@ void Stage::onTouchEnded(Touch *pTouch, Event *pEvent)
     r_range->setPosition(Point((visibleSize.width*3)/4,visibleSize.height/2));
     l_range->setTextureRect(Rect(0, 0, visibleSize.width/2, visibleSize.height));
     l_range->setPosition(visibleSize.width/4,visibleSize.height/2);
+    
+    
+    auto rightdir=this->getChildByTag(RIGHT_DIRECTION_TAG);
+    auto leftdir=this->getChildByTag(LEFT_DIRECTION_TAG);
+    
     if (!r_hand) {
         //pHogeインスタンスが取得できなかった場合は処理を抜ける
         return;
@@ -234,8 +259,14 @@ void Stage::onTouchEnded(Touch *pTouch, Event *pEvent)
     const float _jLowTime=3.0;
     bool missSoundFlag=true;
     //RightHandアクション
-    if (R_Range_Rect.containsPoint(touchPoint)) {
+    //タッチ開始時点が右である場合
+    if (touchSide==RIGHT) {
         r_hand->runAction(Miss);
+        //矢印を元に戻す
+        rightdir->runAction(EaseOut::create(
+                                                Spawn::create(
+                                                              FadeOut::create(0.3),
+                                                              ScaleTo::create(0.3,1),NULL),4));
         for(auto it = _balls.begin();it != _balls.end(); ++it){
             Rect ballRect = (*it) -> boundingBox();
             log("tag %d",(*it)->getTag());
@@ -273,12 +304,15 @@ void Stage::onTouchEnded(Touch *pTouch, Event *pEvent)
                 (*it)->runAction(Sequence::create(jug,remove,callback,gameOver,NULL));
                 return;
             }
-        }
-        CCLOG("TouchRightHand");
-    }
+        }    }
     //LeftHandアクション
-    if(L_Range_Rect.containsPoint(touchPoint)){
+    if(touchSide==LEFT){
         l_hand->runAction(Miss);
+        //矢印を元に戻す
+        leftdir->runAction(EaseOut::create(
+                                            Spawn::create(
+                                                          FadeOut::create(0.3),
+                                                          ScaleTo::create(0.3,1),NULL),4));
         for(auto it = _balls.begin();it != _balls.end(); ++it){
             Rect ballRect = (*it) -> boundingBox();
             log("tag %d",(*it)->getTag());
@@ -319,7 +353,6 @@ void Stage::onTouchEnded(Touch *pTouch, Event *pEvent)
                 return;
             }
         }
-        CCLOG("TouchRightHand");
     }
     if(missSoundFlag)
         CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("se_maoudamashii_system19.mp3", false, 1.0f, 0.0f, 1.0f);
@@ -329,36 +362,103 @@ void Stage::onTouchMoved(Touch *pTouch, Event *pEvent)
 {
     Director* pDirector = Director::getInstance();
     Point touchPoint = pDirector -> convertToGL(pTouch -> getLocationInView());
-    const int MIN_DIST=30;
     
+    Size visibleSize = Director::getInstance()->getVisibleSize(); //画面
+    Sprite* r_range = Sprite::create();
+    Sprite* l_range = Sprite::create();
+    r_range->setTextureRect(Rect(0,0 ,visibleSize.width/2, visibleSize.height));
+    r_range->setPosition(Point((visibleSize.width*3)/4,visibleSize.height/2));
+    l_range->setTextureRect(Rect(0, 0, visibleSize.width/2, visibleSize.height));
+    l_range->setPosition(visibleSize.width/4,visibleSize.height/2);
+    
+    Rect R_Range_Rect = r_range ->boundingBox();
+    Rect L_Range_Rect = l_range ->boundingBox();
+    
+    auto rightdir=this->getChildByTag(RIGHT_DIRECTION_TAG);
+    auto leftdir=this->getChildByTag(LEFT_DIRECTION_TAG);
+    
+    const int MIN_DIST=30;
+    SWIPE_FLAG pre_s_flag=s_flag;
     Vec2 current=pTouch->getLocation();
     float rad=atan2(-touchPoint.y+Last_pt.y,-touchPoint.x+Last_pt.x);
-    CCLOG("%f",rad);
     float dist=Last_pt.distance(pTouch->getLocation());
-    CCLOG("distance=%f",dist);
     float deg=MATH_RAD_TO_DEG(rad);
     swipeDirectionFlag=true;
     if(dist>MIN_DIST){
-        CCLOG("Rad2Deg=%f",MATH_RAD_TO_DEG(rad));
         if((180>=deg&&deg>135)||(-180<deg&&deg<=-135)){
             s_flag=LEFT_SWIPE;
-            CCLOG("LEFTSWIPE");
+          //  CCLOG("LEFTSWIPE");
         }else if(-135<deg&&deg<=-45){
             s_flag=UP_SWIPE;
-            CCLOG("UPSWIPE");
+           // CCLOG("UPSWIPE");
         }else if((-45<deg&&deg<=0)||(0<deg&&deg<=45)){
             s_flag=RIGHT_SWIPE;
-            CCLOG("RIGHTSWIPE");
+          //  CCLOG("RIGHTSWIPE");
         }else if(45<deg&&deg<=135){
             s_flag=DOWN_SWIPE;
-            CCLOG("DOWNSWIPE");
+          //  CCLOG("DOWNSWIPE");
         }
     }else{
-        CCLOG("NONESWIPE");
+      //  CCLOG("NONESWIPE");
         s_flag=NONE_SWIPE;
-        swipeDirectionFlag=false;
     }
-    CCLOG("TouchMoved");
+    if(pre_s_flag!=s_flag){
+        //RIGHTDIRECTIONICON
+        if(touchSide==RIGHT&&R_Range_Rect.containsPoint(touchPoint)){
+            CCLOG("right_swipe_states::%u",s_flag);
+            rightdir->stopAllActions();
+            if(s_flag==UP_SWIPE){
+                rightdir->runAction(
+                                    Spawn::create(EaseBackOut::create(Spawn::create(
+                                        
+                                                      ScaleTo::create(0.3, 2.5),
+                                                      RotateTo::create(0.2, 0)
+                                                      ,NULL)),              FadeIn::create(0.1), NULL));
+
+            }else if(s_flag==RIGHT_SWIPE){
+                rightdir->runAction(
+                                    Spawn::create(EaseBackOut::create(
+                                                                       Spawn::create(
+                                ScaleTo::create(0.3, 2.5),
+                                                  RotateTo::create(0.2, -90)
+                                                  ,NULL)),
+                                                  FadeIn::create(0.1),NULL));
+            }else{
+                rightdir->runAction(
+                                    Spawn::create(
+                                    EaseOut::create(
+                                                    ScaleTo::create(0.3,1),2), NULL));
+            }
+        }else
+        //LEFTDIRECTIONICON
+            if(touchSide==LEFT&&L_Range_Rect.containsPoint(touchPoint)){
+                leftdir->stopAllActions();
+                if(s_flag==UP_SWIPE){
+                    leftdir->runAction(
+                                        Spawn::create(EaseBackOut::create(Spawn::create(
+                                                                                        
+                                                                                        ScaleTo::create(0.3, 2.5),
+                                                                                        RotateTo::create(0.2, 0)
+                                                                                        ,NULL)),              FadeIn::create(0.1), NULL));
+                    
+                }else if(s_flag==LEFT_SWIPE){
+                    leftdir->runAction(
+                                        Spawn::create(EaseBackOut::create(
+                                                                          Spawn::create(
+                                                                                        ScaleTo::create(0.3, 2.5),
+                                                                                        RotateTo::create(0.2, 90)
+                                                                                        ,NULL)),
+                                                      FadeIn::create(0.1),NULL));
+                }else{
+                    leftdir->runAction(
+                                        Spawn::create(
+                                                      EaseOut::create(
+                                                                      ScaleTo::create(0.3,1),2), NULL));
+                }
+
+            CCLOG("left_swipe_states::%u",s_flag);
+        }
+    }
 }
 
 void Stage::BallStart(){
@@ -535,9 +635,12 @@ void Stage::InitLay(){
     leftDir->setRotation(90);
     rightDir->setName("left");
     leftDir->setName("right");
+    
+    rightDir->setPositionZ(-2);
+    leftDir->setPositionZ(-2);
     addChild(rightDir);
     addChild(leftDir);
-    
+
     rightDir->runAction(FadeOut::create(0));
     leftDir->runAction(FadeOut::create(0));
     
@@ -811,7 +914,7 @@ void Stage::StageEffect(float dt){
             waveSprite2->setScale(1.0f);
             waveSprite2->setOpacity(200);
             waveSprite2->setPositionZ(-2);
-            waveSprite2->setTag((int)WAVE_TAG+1);
+            waveSprite2->setTag((int)ANOTHER_WAVE_TAG);
             waveSprite2->setOpacity(0);
             
             //float _dTime=(*it);
@@ -826,7 +929,7 @@ void Stage::StageEffect(float dt){
                 CCLOG("エメラルドスプラッシュ");
             });//:CallFunc
             cocos2d::CallFunc *afterOpacity2 = CallFunc::create([this](){
-                Sprite* waveSprite2 =(Sprite*)this->getChildByTag((int)WAVE_TAG+1);
+                Sprite* waveSprite2 =(Sprite*)this->getChildByTag((int)ANOTHER_WAVE_TAG);
                 waveSprite2->setOpacity(150);
                 CCLOG("エメラルドスプラッシュ2");
             });//:CallFunc
