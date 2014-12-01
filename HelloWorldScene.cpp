@@ -108,40 +108,54 @@ bool HelloWorld::init()
     h_menu->setPosition(Point::ZERO);
     this->addChild(h_menu, 4);
     
+    UserDefault *userDef = UserDefault::getInstance();
     
-   // auto *layer = GUIReader::getInstance()->widgetFromJsonFile("SampleUIAnimation.json");
-   // this->addChild(layer,200);
-  // auto shop= cocostudio::timeline::NodeReader::getInstance()->createNode("SampleUIAnimation.json");
-    //this->addChild(shop);
-    
-      //auto button = (Button*)shop->getChildByName("AttackButton");
-    
- //   cocos2d::CallFunc *functest = CallFunc::create([this]()
-  //                                                 {
-  //                                                     CCLOG("buttonbutton");
-  //                                                 });
-    
-   // button->addTouchEventListener(CC_CALLBACK_2(functest,this));
-    // auto button =(Menu *)shopr->getChildByName("TextButton");
-    
-//    ui::Layout*	layout = ui::Layout::create();
-//#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
-//    
-//    //デバイスがiOSの時
-//    auto widget = dynamic_cast<Layout*>(GUIReader::getInstance()->widgetFromJsonFile("NewUi_1.json"));
-//#else
-//    
-//    //デバイスがAndroidの時
-//        auto widget = cocostudio::GUIReader::getInstance()->widgetFromJsonFile(FileUtils::getInstance()->fullPathForFilename("NewUi/NewUi_1.json").c_str());
-//#endif
-//
-//    
-////    layout->addChild(widget,10);
-//    cocostudio::ActionManagerEx::getInstance()->playActionByName("NewUi_1.json", "Animation0");
-//    
-//    this->addChild(widget,111);
-//    
+    int highScore = userDef->getIntegerForKey("highScore", 0);
+    std::string hi="highScore : ";
+    auto highScoreLabel = Label::createWithSystemFont(hi.append(cocos2d::StringUtils::toString(highScore)), "HiraKakuProN-W6", 24);
+    highScoreLabel->setPosition(Point(visibleSize.width-130, visibleSize.height-100));
+    this->addChild(highScoreLabel);
 
+    
+    
+    //Spriteを用意
+    auto image1 = Sprite::create("offButton.png");
+    auto image2 = Sprite::create("onButton.png");
+    
+    
+    //MenuItemSpriteクラスを作成
+    auto item1 = MenuItemSprite::create(image1, image1);
+    auto item2 = MenuItemSprite::create(image2, image2);
+    
+    
+    
+    bool assistStates = userDef->getBoolForKey("assistStates", true);
+    
+    auto menuToggle1 = MenuItemToggle::createWithCallback([userDef,assistStates](Ref *sender){
+        if(assistStates){
+            userDef->setBoolForKey("assistStates", false);
+        }else if(!assistStates){
+            userDef->setBoolForKey("assistStates", true);
+        }
+    }, item1,item2,NULL);
+    
+    if(assistStates){
+        menuToggle1->setSelectedIndex(1);
+    }else{
+        menuToggle1->setSelectedIndex(0);
+    }
+    
+    auto _menu = Menu::create(menuToggle1,NULL);
+    _menu->setPosition(Point(150,visibleSize.height-100));
+    
+    addChild(_menu);
+    
+    
+    auto assistLabel = Label::createWithSystemFont("Assist", "HiraKakuProN-W6", 24);
+    assistLabel->setPosition(Point(50, visibleSize.height-100));
+    this->addChild(assistLabel);
+
+    
     return true;
 }
 

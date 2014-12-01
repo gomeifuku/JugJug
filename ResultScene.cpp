@@ -138,8 +138,9 @@ bool Result::init()
         auto scoreLabel = Label::createWithSystemFont(cocos2d::StringUtils::toString(tempScore), "HiraKakuProN-W6", 48);
         scoreLabel->setPosition(Point(visibleSize.width/2, visibleSize.height/2));
         this->addChild(scoreLabel);
-        auto highScoreLabel = Label::createWithSystemFont(cocos2d::StringUtils::toString(highScore), "HiraKakuProN-W6", 24);
-        highScoreLabel->setPosition(Point(visibleSize.width-100, visibleSize.height-100));
+        std::string hi="highScore : ";
+        auto highScoreLabel = Label::createWithSystemFont(hi.append(cocos2d::StringUtils::toString(highScore)), "HiraKakuProN-W6", 24);
+        highScoreLabel->setPosition(Point(visibleSize.width-140, visibleSize.height-100));
         this->addChild(highScoreLabel);
     }
     return true;

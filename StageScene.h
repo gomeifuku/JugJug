@@ -9,7 +9,6 @@
 #ifndef __Hanauranai__StageScene__
 #define __Hanauranai__StageScene__
 #include "cocos2d.h"
-#include "XTLayer.h"
 #include "BallSprite.h"
 
 class Stage : public cocos2d::Layer

@@ -403,6 +403,10 @@ void Stage::onTouchMoved(Touch *pTouch, Event *pEvent)
         s_flag=NONE_SWIPE;
     }
     if(pre_s_flag!=s_flag){
+        float scalesize=3.0;
+        float scaletotime=0.3;
+        float scalebacktime=0.6;
+        float rotatetotime=0.2;
         //RIGHTDIRECTIONICON
         if(touchSide==RIGHT&&R_Range_Rect.containsPoint(touchPoint)){
             CCLOG("right_swipe_states::%u",s_flag);
@@ -411,23 +415,23 @@ void Stage::onTouchMoved(Touch *pTouch, Event *pEvent)
                 rightdir->runAction(
                                     Spawn::create(EaseBackOut::create(Spawn::create(
                                         
-                                                      ScaleTo::create(0.3, 2.5),
-                                                      RotateTo::create(0.2, 0)
+                                                      ScaleTo::create(scaletotime, scalesize),
+                                                      RotateTo::create(rotatetotime, 0)
                                                       ,NULL)),              FadeIn::create(0.1), NULL));
 
             }else if(s_flag==RIGHT_SWIPE){
                 rightdir->runAction(
                                     Spawn::create(EaseBackOut::create(
                                                                        Spawn::create(
-                                ScaleTo::create(0.3, 2.5),
-                                                  RotateTo::create(0.2, -90)
+                                ScaleTo::create(scaletotime, scalesize),
+                                                  RotateTo::create(rotatetotime, -90)
                                                   ,NULL)),
                                                   FadeIn::create(0.1),NULL));
             }else{
                 rightdir->runAction(
                                     Spawn::create(
                                     EaseOut::create(
-                                                    ScaleTo::create(0.3,1),2), NULL));
+                                                    ScaleTo::create(scalebacktime,1),2),FadeOut::create(0.3) ,NULL));
             }
         }else
         //LEFTDIRECTIONICON
@@ -437,23 +441,23 @@ void Stage::onTouchMoved(Touch *pTouch, Event *pEvent)
                     leftdir->runAction(
                                         Spawn::create(EaseBackOut::create(Spawn::create(
                                                                                         
-                                                                                        ScaleTo::create(0.3, 2.5),
-                                                                                        RotateTo::create(0.2, 0)
+                                                                                        ScaleTo::create(scaletotime, scalesize),
+                                                                                        RotateTo::create(rotatetotime, 0)
                                                                                         ,NULL)),              FadeIn::create(0.1), NULL));
                     
                 }else if(s_flag==LEFT_SWIPE){
                     leftdir->runAction(
                                         Spawn::create(EaseBackOut::create(
                                                                           Spawn::create(
-                                                                                        ScaleTo::create(0.3, 2.5),
-                                                                                        RotateTo::create(0.2, 90)
+                                                                                        ScaleTo::create(scaletotime, scalesize),
+                                                                                        RotateTo::create(rotatetotime, 90)
                                                                                         ,NULL)),
                                                       FadeIn::create(0.1),NULL));
                 }else{
                     leftdir->runAction(
                                         Spawn::create(
                                                       EaseOut::create(
-                                                                      ScaleTo::create(0.3,1),2), NULL));
+                                                                      ScaleTo::create(scalebacktime,1),2),FadeOut::create(0.2), NULL));
                 }
 
             CCLOG("left_swipe_states::%u",s_flag);
@@ -623,9 +627,17 @@ void Stage::InitLay(){
     
     text->runAction(textAnimation);
     
-    auto rightDir =Sprite::create("direction.png");
-    auto leftDir  =Sprite::create("direction.png");
+    bool assistStates = userDef->getBoolForKey("assistStates", true);
+    std::string directon_path;
     
+    if(assistStates){
+        directon_path="direction.png";
+    }else{
+        directon_path="nothing.png";
+    }
+    
+    auto rightDir =Sprite::create(directon_path);
+    auto leftDir  =Sprite::create(directon_path);
     rightDir->setPosition(r_hand->getPosition());
     leftDir->setPosition(l_hand->getPosition());
     rightDir->setTag(RIGHT_DIRECTION_TAG);
@@ -835,11 +847,13 @@ void Stage::update(float delta){
     scoreLabel->setString(cocos2d::StringUtils::toString(jugScore));
     
     if(!startFlag&&jugScore==1){
-        this->runAction(Sequence::create(DelayTime::create(2),CallFunc::create([this](){
+        this->runAction(Sequence::create(DelayTime::create(3),CallFunc::create([this](){
             Stage::ballUpdate(0);
         }), NULL));
-        this->schedule( schedule_selector(Stage::ballUpdate), 9.0 );
-        this->schedule( schedule_selector(Stage::StageEffect), 4.0 );
+        this->runAction(Sequence::create(DelayTime::create(2),CallFunc::create([this](){
+            this->schedule( schedule_selector(Stage::ballUpdate), 9.0 );
+            this->schedule( schedule_selector(Stage::StageEffect), 4.0 );
+        }), NULL));
         startFlag=true;
     }
 
