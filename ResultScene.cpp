@@ -8,6 +8,7 @@
 
 #include "ResultScene.h"
 #include "StageScene.h"
+#include "ScoreCenter.h"
 #include "HelloWorldScene.h"
 #include "AppCCloudPlugin.h"
 USING_NS_CC;
@@ -125,6 +126,17 @@ bool Result::init()
     this->addChild(honorLabel);
 
     
+    auto scoreButton = MenuItemImage::create(
+                                             "sendScore.png",  // 通常状態の画像
+                                             "sendScore.png",  // 押下状態の画像
+                                             CC_CALLBACK_1(Result::pushScore, this)); // 押下時のアクション
+    
+    scoreButton->setPosition(Point(visibleSize.width*3/4+130 ,visibleSize.height/2+dby+80));
+    //create menu, it's an autorelease object
+    auto sc_menu = Menu::create(scoreButton, NULL);
+    sc_menu->setPosition(Point::ZERO);
+    this->addChild(sc_menu, 4);
+    
     CCLOG("highscore=%dtempScore=%d",highScore,tempScore);
     if(tempScore>highScore){
         userDef->setIntegerForKey("highScore", tempScore);
@@ -151,8 +163,9 @@ bool Result::onTouchBegan(Touch *pTouch, Event *pEvent)
 {
     Point location =pTouch->getLocation();
     
-     
+
     CCLOG("TouchBegan");
+    
     return true;
 }
 
@@ -187,6 +200,23 @@ void Result::pushRetry(Ref *pSender)
     
     //遷移実行  遷移時のアニメーション　http://study-cocos2d-x.info/scenelayer/55/
     Director::getInstance()->replaceScene(transition);
+}
+void Result::pushScore(cocos2d::Ref *pSender){
+    UserDefault *userDef = UserDefault::getInstance();
+    
+    
+    int tempScore = userDef->getIntegerForKey("temp");
+    std::string str = StringUtils::toString(tempScore);
+    char *cstr = new char[str.length() + 1];
+    strcpy(cstr, str.c_str());
+    
+    //    ScoreCenter::postScore("com.com.jugjug_scoreboard1", "30");
+    #if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
+    ScoreCenter::postScore("com.com.jugjug_scoreboard1",cstr);
+    ScoreCenter::showRanking("com.com.jugjug_scoreboard1");
+#endif
+    
+    delete [] cstr;
 }
 void Result::onTouchEnded(Touch *pTouch, Event *pEvent)
 {

@@ -51,9 +51,6 @@ bool Stage::init(){
     {
         return false;
     }
-    
-    //画面の座標関係の詳しい説明はここ http://www.cocos2d-x.org/wiki/Coordinate_System
-    Size visibleSize = Director::getInstance()->getVisibleSize(); //画面のサイズを取得
     Point origin = Director::getInstance()->getVisibleOrigin();  //マルチレゾリューション対応がどうとか
     //layout構築
     InitLay();
@@ -471,12 +468,11 @@ void Stage::BallStart(){
     Sprite* ball=Sprite::create();
 
     Point ballPos;
-    float ball_size=30;
+    float ball_size=40;
     ball->setTextureRect(Rect(0, 0, ball_size, ball_size));
     
     count=arc4random()%2;
     int randomNum = count%2+1;
-    int jumpHeight=100;
     if(randomNum==(int)RIGHT_HAND_TAG){
         ball->setTag(C_BALL_TAG);
         ball->setColor(Color3B::YELLOW);
@@ -503,6 +499,21 @@ void Stage::BallStart(){
     count++;
     _balls.pushBack(ball);
     
+    auto ballPositionWave=Sprite::create("wave.png");
+    if(count==(int)RIGHT_HAND_TAG)
+        ballPositionWave->setPosition(r_hand->getPosition());
+    else
+        ballPositionWave->setPosition(l_hand->getPosition());
+    auto repeatWaveAction = RepeatForever::create(Sequence::create(
+                                                                   ScaleTo::create(0, 1),
+                                                                    FadeIn::create(0),
+                                                                    Spawn::create(
+                                                                                  FadeOut::create(1),
+                                                                                  ScaleTo::create(1, 7)
+                                                                                  , NULL)
+                                                                   , NULL));
+    ballPositionWave->runAction(repeatWaveAction);
+    this->addChild(ballPositionWave,1,25);
     startFlag=false;
 
 }
@@ -536,6 +547,7 @@ void Stage::InitEvent(){
     };
     this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener2, this);
     
+    
     this->scheduleUpdate();
 }
 void Stage::InitSound(){
@@ -562,16 +574,6 @@ void Stage::InitLay(){
     l_hand->setColor(Color3B::BLUE);
     l_hand->setPositionZ(-1);
     
-    //    for(int i;i<4;i++){
-    //        th_ball[i]=Sprite::create();
-    //        th_ball[i]->create();
-    //        th_ball[i]->setTextureRect(Rect(0, 0,8, 8));
-    //        th_ball[i]->setColor(Color3B::BLACK);
-    //        th_ball[i]->setPosition(0, 0);
-    //        th_ball[i]->setPositionZ(1);
-    ////        th_ball[i]->setOpacity(128);
-    //        this->addChild(th_ball[i]);
-    //    }
     
     float x_r = visibleSize.width / 2;
     float y_r = visibleSize.height / 2;
@@ -661,7 +663,6 @@ void Stage::InitLay(){
 
 }
 void Stage::ballUpdate(float dt){
-    Size visibleSize = Director::getInstance()->getVisibleSize(); //画面のサイズを取得
     
     Sprite* r_hand=(Sprite*)this->getChildByTag(RIGHT_HAND_TAG);
     Sprite* l_hand=(Sprite*)this->getChildByTag(LEFT_HAND_TAG);
@@ -670,7 +671,7 @@ void Stage::ballUpdate(float dt){
     
     float ball_px;
     float ball_py;
-    float ball_size=30;
+    float ball_size=40;
     ball->setTextureRect(Rect(0, 0, ball_size, ball_size));
     int randomNum = count%2+1;
     int jumpHeight=100;
@@ -758,9 +759,6 @@ void Stage::ballUpdate(float dt){
 }
 void Stage::update(float delta){
 
-    auto draw =DrawNode::create();
-   
-    Size visibleSize = Director::getInstance()->getVisibleSize(); //画面のサイズを取得
    Point origin = Director::getInstance()->getVisibleOrigin();  //マルチレ対応がどうとか
 //    
     Sprite* r_hand=(Sprite*)this->getChildByTag(RIGHT_HAND_TAG);
@@ -847,6 +845,9 @@ void Stage::update(float delta){
     scoreLabel->setString(cocos2d::StringUtils::toString(jugScore));
     
     if(!startFlag&&jugScore==1){
+        auto ballPositonWave=this->getChildByTag(25);
+        ballPositonWave->stopAllActions();
+        ballPositonWave->runAction(Sequence::create(FadeOut::create(0.1),RemoveSelf::create() ,NULL));
         this->runAction(Sequence::create(DelayTime::create(3),CallFunc::create([this](){
             Stage::ballUpdate(0);
         }), NULL));

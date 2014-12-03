@@ -3,6 +3,8 @@
 #include "HowToScene.h"
 #include <ui/CocosGUI.h>
 #include "cocostudio/CCSGUIReader.h"
+#include "ScoreCenter.h"
+#include "AppCCloudPlugin.h"
 #include <algorithm>
 #include "editor-support/cocostudio/CocoStudio.h"
 USING_NS_CC;
@@ -155,7 +157,19 @@ bool HelloWorld::init()
     assistLabel->setPosition(Point(50, visibleSize.height-100));
     this->addChild(assistLabel);
 
+    auto rankButton = MenuItemImage::create(
+                                             "RANKING.png",  // 通常状態の画像
+                                             "RANKING.png",  // 押下状態の画像
+                                             CC_CALLBACK_1(HelloWorld::pushRank, this)); // 押下時のアクション
     
+    rankButton->setPosition(Point(visibleSize.width*3/4+100 ,visibleSize.height/2+150));
+    //create menu, it's an autorelease object
+    auto rk_menu = Menu::create(rankButton, NULL);
+    rk_menu->setPosition(Point::ZERO);
+    this->addChild(rk_menu, 5);
+    #if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
+    ScoreCenter::login();
+#endif
     return true;
 }
 
@@ -212,6 +226,12 @@ void HelloWorld::pushFree(Ref *pSender)
     
     //遷移実行  遷移時のアニメーション　http://study-cocos2d-x.info/scenelayer/55/
     Director::getInstance()->replaceScene(transition);
+}
+void HelloWorld::pushRank(Ref *pSender){
+        #if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
+    ScoreCenter::showRanking("com.com.jugjug_scoreboard1");
+        ScoreCenter::login();
+#endif
 }
 void HelloWorld::pushHowto(Ref *pSender)
 {

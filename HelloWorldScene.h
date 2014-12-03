@@ -18,6 +18,7 @@ public:
     void pushStart(cocos2d::Ref *pSender);
     void pushFree(cocos2d::Ref *pSender);
     void pushHowto(cocos2d::Ref *pSender);
+    void pushRank(cocos2d::Ref *pSender);
     bool onTouchBegan(cocos2d::Touch *pTouch, cocos2d::Event *pEvent);
     void onTouchMoved(cocos2d::Touch *pTouch, cocos2d::Event *pEvent);
     void onTouchEnded(cocos2d::Touch *pTouch, cocos2d::Event *pEvent);

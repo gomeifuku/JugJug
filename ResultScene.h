@@ -24,6 +24,7 @@ public:
     CREATE_FUNC(Result);
     void pushStart(cocos2d::Object *pSender);
     void pushRetry(cocos2d::Ref *pSender);
+    void pushScore(cocos2d::Ref *pSender);
     bool onTouchBegan(cocos2d::Touch *pTouch, cocos2d::Event *pEvent);
     void onTouchMoved(cocos2d::Touch *pTouch, cocos2d::Event *pEvent);
     void onTouchEnded(cocos2d::Touch *pTouch, cocos2d::Event *pEvent);
