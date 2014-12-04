@@ -170,6 +170,7 @@ bool HelloWorld::init()
     #if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
     ScoreCenter::login();
 #endif
+    
     return true;
 }
 
@@ -177,7 +178,8 @@ bool HelloWorld::init()
 bool HelloWorld::onTouchBegan(Touch *pTouch, Event *pEvent)
 {
     Point location =pTouch->getLocation();
-    
+    // 作成したパーティクルのプロパティリストを読み込み
+   
     
   ;
     CCLOG("TouchBegan");
@@ -230,7 +232,6 @@ void HelloWorld::pushFree(Ref *pSender)
 void HelloWorld::pushRank(Ref *pSender){
         #if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
     ScoreCenter::showRanking("com.com.jugjug_scoreboard1");
-        ScoreCenter::login();
 #endif
 }
 void HelloWorld::pushHowto(Ref *pSender)

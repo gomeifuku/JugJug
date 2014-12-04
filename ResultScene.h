@@ -28,6 +28,7 @@ public:
     bool onTouchBegan(cocos2d::Touch *pTouch, cocos2d::Event *pEvent);
     void onTouchMoved(cocos2d::Touch *pTouch, cocos2d::Event *pEvent);
     void onTouchEnded(cocos2d::Touch *pTouch, cocos2d::Event *pEvent);
+    void StageEffect(float dt);
     void onTouchCancelled(cocos2d::Touch *pTouch, cocos2d::Event *pEvent);
 
 };

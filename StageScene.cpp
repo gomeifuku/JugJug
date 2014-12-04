@@ -114,6 +114,12 @@ bool Stage::onTouchBegan(Touch *pTouch, Event *pEvent)
     }else if(L_Range_Rect.containsPoint(touchPoint)){
         touchSide=LEFT;
     }
+    
+    ParticleSystemQuad* touchParticle=(ParticleSystemQuad*)this->getChildByTag(28);
+    
+    touchParticle->setPosition(touchPoint);
+    touchParticle->resetSystem();
+    
     CCLOG("TouchBegan");
     return true;
 }
@@ -183,6 +189,9 @@ void Stage::onTouchEnded(Touch *pTouch, Event *pEvent)
         return;
     }
 
+    //パーティクル終了
+    auto touchParticle=(ParticleSystemQuad* )this->getChildByTag(28);
+    touchParticle->stopSystem();
     
     float animationTime=0.2,jumpHeight=20,jumpNum=1;
     Spawn* RUThrow = Spawn::create(
@@ -353,6 +362,7 @@ void Stage::onTouchEnded(Touch *pTouch, Event *pEvent)
     }
     if(missSoundFlag)
         CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("se_maoudamashii_system19.mp3", false, 1.0f, 0.0f, 1.0f);
+    
 }
 
 void Stage::onTouchMoved(Touch *pTouch, Event *pEvent)
@@ -657,12 +667,30 @@ void Stage::InitLay(){
 
     rightDir->runAction(FadeOut::create(0));
     leftDir->runAction(FadeOut::create(0));
+//    
+//    ParticleSystemQuad* particle = CCParticleSystemQuad::create("Stage_texture.plist");
+//    particle->setAutoRemoveOnFinish(true);
+//    
+//    // パーティクルを表示する場所の設定
+//    particle->setPosition(visibleSize/2);
+//    particle->cocos2d::Node::setScale(2);
+//    particle->setPositionZ(-3);
+//    
+//    
+//    // パーティクルを配置
+//    this->addChild(particle);
+//
     
-    
+    ParticleSystemQuad* touchParticle = CCParticleSystemQuad::create("touchTexture.plist");
+    touchParticle->setPositionZ(0);
+    touchParticle->setBlendAdditive(true);
+    this->addChild(touchParticle);
+    touchParticle->setTag(28);
+    touchParticle->stopSystem();
     BallStart();
 
 }
-void Stage::ballUpdate(float dt){
+void Stage::ballUpdate(float dtr){
     
     Sprite* r_hand=(Sprite*)this->getChildByTag(RIGHT_HAND_TAG);
     Sprite* l_hand=(Sprite*)this->getChildByTag(LEFT_HAND_TAG);
@@ -875,6 +903,7 @@ void Stage::HandEffect(Stage::SPRITE_TAG hand){
     waveSprite->setPositionZ(-2);
     this->addChild(waveSprite, 30);
     
+  
     auto remove = RemoveSelf::create(true);
     
     Spawn* spawn = Spawn::create(
@@ -894,11 +923,23 @@ void Stage::HandEffect(Stage::SPRITE_TAG hand){
     this->addChild(scoreLabelClone);
     scoreLabelClone->runAction(Sequence::create(spawn2,remove,NULL));
     
+//    
+//        ParticleSystemQuad* particle = CCParticleSystemQuad::create("swipetexture.plist");
+//        particle->setAutoRemoveOnFinish(true);
+//    
+//        // パーティクルを表示する場所の設定
+//        particle->setPosition(handPos);
+//        particle->setPositionZ(-3);
+//    
+//    
+//        // パーティクルを配置
+//        this->addChild(particle);
     
+
 }
 void Stage::StageEffect(float dt){
     Size visibleSize = Director::getInstance()->getVisibleSize(); //画面のサイズを取得
-    
+
     // 画像スプライトを配置するX
     hitDelay=getSec();
 //    CCLOG("%f",hitDelay);

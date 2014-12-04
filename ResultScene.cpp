@@ -146,6 +146,7 @@ bool Result::init()
         high->setPosition(Point(visibleSize.width/2, visibleSize.height/2+250));
         this->addChild(high);
         this->addChild(scoreLabel);
+        this->schedule( schedule_selector(Result::StageEffect), 1.8 );
     }else{
         auto scoreLabel = Label::createWithSystemFont(cocos2d::StringUtils::toString(tempScore), "HiraKakuProN-W6", 48);
         scoreLabel->setPosition(Point(visibleSize.width/2, visibleSize.height/2));
@@ -155,6 +156,8 @@ bool Result::init()
         highScoreLabel->setPosition(Point(visibleSize.width-140, visibleSize.height-100));
         this->addChild(highScoreLabel);
     }
+    
+
     return true;
 }
 
@@ -231,4 +234,22 @@ void Result::onTouchMoved(Touch *pTouch, Event *pEvent)
 void Result::onTouchCancelled(Touch *pTouch, Event *pEvent)
 {
     CCLOG("TouchCancelled");
+}
+
+void Result::StageEffect(float dt){
+    
+    Size visibleSize = Director::getInstance()->getVisibleSize();
+    
+    ParticleSystemQuad* particle = CCParticleSystemQuad::create("highscoretexture.plist");
+    particle->setAutoRemoveOnFinish(true);
+    
+    int px=arc4random()%500;
+    int py=arc4random()%400+80;
+    // パーティクルを表示する場所の設定
+    particle->setPosition(Point((visibleSize.width-px)/2+px,visibleSize.height-py));
+    particle->setPositionZ(-3);
+    
+    CCLOG("px=%d,py=%d",px,py);
+    // パーティクルを配置
+    this->addChild(particle);
 }
