@@ -126,17 +126,6 @@ bool Result::init()
     this->addChild(honorLabel);
 
     
-    auto scoreButton = MenuItemImage::create(
-                                             "sendScore.png",  // 通常状態の画像
-                                             "sendScore.png",  // 押下状態の画像
-                                             CC_CALLBACK_1(Result::pushScore, this)); // 押下時のアクション
-    
-    scoreButton->setPosition(Point(visibleSize.width*3/4+130 ,visibleSize.height/2+dby+80));
-    //create menu, it's an autorelease object
-    auto sc_menu = Menu::create(scoreButton, NULL);
-    sc_menu->setPosition(Point::ZERO);
-    this->addChild(sc_menu, 4);
-    
     CCLOG("highscore=%dtempScore=%d",highScore,tempScore);
     if(tempScore>highScore){
         userDef->setIntegerForKey("highScore", tempScore);
@@ -157,6 +146,17 @@ bool Result::init()
         this->addChild(highScoreLabel);
     }
     
+    auto scoreButton = MenuItemImage::create(
+                                             "sendScore.png",  // 通常状態の画像
+                                             "sendScore.png",  // 押下状態の画像
+                                             CC_CALLBACK_1(Result::pushScore, this)); // 押下時のアクション
+    
+    scoreButton->setPosition(Point(visibleSize.width*3/4+130 ,visibleSize.height/2+dby+80));
+    //create menu, it's an autorelease object
+    auto sc_menu = Menu::create(scoreButton, NULL);
+    sc_menu->setPosition(Point::ZERO);
+    this->addChild(sc_menu, 4);
+
 
     return true;
 }
